@@ -39,36 +39,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvResult = findViewById(R.id.tvResult);
         tvExpression = findViewById(R.id.tvExpression);
 
-        initButton(btn0,R.id.btn0);
-        initButton(btn1,R.id.btn1);
-        initButton(btn2,R.id.btn2);
-        initButton(btn3,R.id.btn3);
-        initButton(btn4,R.id.btn4);
-        initButton(btn5,R.id.btn5);
-        initButton(btn6,R.id.btn6);
-        initButton(btn7,R.id.btn7);
-        initButton(btn8,R.id.btn8);
-        initButton(btn9,R.id.btn9);
-        initButton(btnDot,R.id.btnDot);
-        initButton(btnAC,R.id.btnAC);
-        initButton(btnC,R.id.btnC);
-        initButton(btnAC,R.id.btnAC);
-        initButton(btnAddition,R.id.btnAddition);
-        initButton(btnDivide,R.id.btnDivide);
-        initButton(btnSubtract,R.id.btnSubtract);
-        initButton(btnMultiply,R.id.btnMultiply);
-        initButton(btnOB,R.id.btnOpenBrackets);
-        initButton(btnCB,R.id.btnCloseBrackets);
-        initButton(btnEqual,R.id.btnEqual);
-        tvExpression.setText("12345");
-
-
+        initButton(btn0, R.id.btn0);
+        initButton(btn1, R.id.btn1);
+        initButton(btn2, R.id.btn2);
+        initButton(btn3, R.id.btn3);
+        initButton(btn4, R.id.btn4);
+        initButton(btn5, R.id.btn5);
+        initButton(btn6, R.id.btn6);
+        initButton(btn7, R.id.btn7);
+        initButton(btn8, R.id.btn8);
+        initButton(btn9, R.id.btn9);
+        initButton(btnDot, R.id.btnDot);
+        initButton(btnAC, R.id.btnAC);
+        initButton(btnC, R.id.btnC);
+        initButton(btnAC, R.id.btnAC);
+        initButton(btnAddition, R.id.btnAddition);
+        initButton(btnDivide, R.id.btnDivide);
+        initButton(btnSubtract, R.id.btnSubtract);
+        initButton(btnMultiply, R.id.btnMultiply);
+        initButton(btnOB, R.id.btnOpenBrackets);
+        initButton(btnCB, R.id.btnCloseBrackets);
+        initButton(btnEqual, R.id.btnEqual);
     }
 
     void initButton(MaterialButton button, int id) {
         button = findViewById(id);
         button.setOnClickListener(this::onClick);
-
     }
 
     @Override
@@ -83,22 +79,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         if (btnText.equals("C")) {
-            if (data.length()!=0)
-                data = data.substring(0,data.length()-1);
+            if (data.length() != 0) {
+                data = data.substring(0, data.length() - 1);
+            }
             tvExpression.setText(data);
             return;
         }
         if (btnText.equals("=")) {
-            tvExpression.setText(tvResult.getText());
+            if (isValidExpression(data)) {
+                tvExpression.setText(tvResult.getText());
+            } else {
+                tvResult.setText("Error: Incorrect brackets");
+            }
             return;
         }
+
+        // Deletes the initial zero if a number is entered
+        if (data.equals("0")) {
+            if (!btnText.equals(".")) {
+                data = "";
+            }
+        }
+
+        // Check for duplicate operators
+        if (isOperator(btnText) && data.length() > 0 && isOperator(data.substring(data.length() - 1))) {
+            return;
+        }
+
         data += btnText;
         tvExpression.setText(data);
 
         String finalResult = evaluateExpression(data);
-        if (!finalResult.equals("Error"))
+        if (!finalResult.equals("Error")) {
             tvResult.setText(finalResult);
-        Log.i("result", evaluateExpression(data)+"");
+        }
+        Log.i("result", evaluateExpression(data) + "");
     }
 
     private String evaluateExpression(String expression) {
@@ -111,12 +126,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             DecimalFormat decimalFormat = new DecimalFormat("#.###");
 
             return decimalFormat.format(Double.parseDouble(result));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return "Error";
-        }
-        finally {
+        } finally {
             Context.exit();
         }
+    }
+
+    // Parenthesis pairing check
+    private boolean isValidExpression(String expression) {
+        int openBrackets = 0;
+        for (char ch : expression.toCharArray()) {
+            if (ch == '(') {
+                openBrackets++;
+            } else if (ch == ')') {
+                openBrackets--;
+                if (openBrackets < 0) {
+                    return false;
+                }
+            }
+        }
+        return openBrackets == 0;
+    }
+
+    // Operator check
+    private boolean isOperator(String text) {
+        return text.equals("+") || text.equals("-") || text.equals("*") || text.equals("/");
     }
 }
